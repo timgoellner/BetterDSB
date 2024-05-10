@@ -39,7 +39,6 @@ def get(authid: str, request_body: str) -> dict:
     global_tables = []
 
     for table_id, _ in enumerate(result):
-      print(table_id)
       tables = []
 
       try:
