@@ -1,5 +1,5 @@
 import requests
-from parser import parse
+from parser import filter_parse
 
 BASE_URL = 'https://mobileapi.dsbcontrol.de/'
 
@@ -19,6 +19,14 @@ def get(authid: str, request_body: str) -> dict:
 
   result = result.json()
 
+  grade = ''
+  if 'grade' in request_body: grade = request_body['grade']
+
+  classes = []
+  if 'classes' in request_body and isinstance(request_body['classes'], list): classes = request_body['classes']
+
+  if grade == '' and len(classes) > 0: return { 'error': 'searching for specific classes without a grade is not permitted' }
+
   if 'id' in request_body and str(request_body['id']).isdigit():
     if len(result) <= int(request_body['id']): return { 'error': 'invalid table id' }
 
@@ -33,7 +41,7 @@ def get(authid: str, request_body: str) -> dict:
     except Exception as error:
       return { 'error': 'unexpected structure of the dsb server response' }
 
-    return parse(tables)
+    return filter_parse(tables, grade, classes)
 
   else:
     global_tables = []
@@ -50,7 +58,7 @@ def get(authid: str, request_body: str) -> dict:
       except Exception as error:
         return { 'error': 'unexpected structure of the dsb server response' }
 
-      global_tables.append(parse(tables))
+      global_tables.append(filter_parse(tables, grade, classes))
 
     return global_tables
   
